@@ -10,7 +10,8 @@ export default function Home() {
   const [data, setData] = useState(null)
 
   useEffect(() => {
-    fetch('http://localhost:8080/freee')
+    console.log(process.env.NEXT_PUBLIC_ATTENDANCE_URL)
+    fetch(process.env.NEXT_PUBLIC_ATTENDANCE_URL ?? '')
       .then((response) => response.json())
       .then((data) => setData(data))
   }, [])
@@ -68,7 +69,7 @@ export default function Home() {
             rel="noopener noreferrer"
           >
             <h2>
-              {data} <span>-&gt;</span>
+              Docs <span>-&gt;</span>
             </h2>
             <p>
               Find in-depth information about Next.js features and&nbsp;API.
