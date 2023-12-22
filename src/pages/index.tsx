@@ -1,24 +1,99 @@
 import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { Inter } from 'next/font/google';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import Modal from '@mui/material/Modal';
 import dynamic from "next/dynamic";
-// import { Time } from '../component/time';
+import { enqueueSnackbar } from 'notistack'
+import TextField from '@mui/material/TextField';
+
 const Time = dynamic(() => import("../component/time").then((module) => module.Time), { ssr: false });
 
 const inter = Inter({ subsets: ['latin'] });
 
+type User = {
+  id: string,
+  name: string,
+}
+
+const style = {
+  position: 'absolute' as 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+};
+
+const selectKindStyle = {
+  width: "500px",
+  height: "50px",
+  backgroundColor: "green",
+  '&:hover': {
+    backgroundColor: "green",
+  }
+}
+
+const defaultStyle = {
+  width: "300px",
+  height: "50px",
+}
+
 export default function Home() {
-  const [data, setData] = useState(null);
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [selectedUser, setSelectedUser] = useState<User>();
+  const [kind, setKind] = useState<'start' | 'end'>();
+  const [password, setPassword] = useState<string>();
 
   useEffect(() => {
-    console.log(process.env.NEXT_PUBLIC_ATTENDANCE_URL);
-    fetch(process.env.NEXT_PUBLIC_ATTENDANCE_URL ?? '')
+    fetch(process.env.NEXT_PUBLIC_ATTENDANCE_URL + '/user' ?? '')
       .then((response) => response.json())
-      .then((data) => setData(data));
+      .then((data) => setUsers(data));
   }, []);
 
-  console.log({ data });
+  const onClickUserName = (user: User) => {
+    setSelectedUser(user)
+    handleOpen();
+  }
+
+  const onClickOk = () => {
+    const originalDate = new Date();
+    const isoDateString = originalDate.toLocaleString();
+    console.log({ originalDate, isoDateString })
+    fetch(process.env.NEXT_PUBLIC_ATTENDANCE_URL + '/attendance' ?? '', {
+      method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: selectedUser?.id,
+        kind: kind,
+        time: isoDateString,
+        password: password,
+      }),
+    }).then((res) => {
+      console.log({ res })
+      if (res.status != 200) {
+        throw new Error(res.statusText)
+      }
+      enqueueSnackbar('success', { variant: 'success', anchorOrigin: { horizontal: 'center', vertical: 'top' } })
+    }).catch((e: Error) => {
+      console.log({ e })
+      enqueueSnackbar(e.message, { variant: 'error', anchorOrigin: { horizontal: 'center', vertical: 'top' } })
+    })
+    setPassword('')
+    handleClose()
+  }
+
   return (
     <>
       <Head>
@@ -27,18 +102,47 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div>
+      <div style={{ marginLeft: "30px" }}>
         <Time></Time>
       </div>
-      <div>
-        <Button variant="contained">出勤</Button>
-        <Button variant="contained">退勤</Button>
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column" }}>
+        <div style={{ marginTop: "50px", gap: 100, display: "flex" }}>
+          <Button sx={kind === 'start' ? selectKindStyle : defaultStyle} variant="contained" onClick={() => setKind("start")}>出勤</Button>
+          <Button sx={kind === 'end' ? selectKindStyle : defaultStyle} variant="contained" onClick={() => setKind("end")}>退勤</Button>
+        </div>
+        <div style={{ marginTop: "30px", gap: 50, display: "flex" }}>
+          <Button variant="contained" sx={{ backgroundColor: "gray", width: "400px" }} >タイムカード</Button>
+          <Button variant="contained" sx={{ backgroundColor: "gray", width: "300px" }} >出勤状況</Button>
+          <Button variant="contained" sx={{ backgroundColor: "gray", width: "200px" }} >ヘルプ</Button>
+        </div>
+        <div style={{ marginTop: "60px", gap: 30, display: "flex" }}>
+          {users.map((user) => (
+            <Button key={user.id} variant="contained" sx={{ backgroundColor: "green" }} onClick={() => onClickUserName(user)} disabled={!kind}>{user.name}</Button>
+          ))}
+        </div>
       </div>
-      <div>
-        <Button variant="contained">タイムカード</Button>
-        <Button variant="contained">出勤状況</Button>
-        <Button variant="contained">ヘルプ</Button>
-      </div>
+      <Modal
+        open={open}
+        onClose={handleClose}
+      >
+        <Box sx={style}>
+          <Typography id="modal-modal-title" variant="h6" component="h2">
+            {selectedUser?.id}: {selectedUser?.name}
+          </Typography>
+          <TextField
+            label="Password"
+            type="password"
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+              setPassword(event.target.value);
+            }}
+            value={password}
+          />
+          <div>
+            <Button variant="contained" onClick={handleClose}>キャンセル</Button>
+            <Button variant="contained" onClick={onClickOk}>OK</Button>
+          </div>
+        </Box>
+      </Modal>
     </>
   );
 }
