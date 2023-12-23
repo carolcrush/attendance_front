@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import Head from 'next/head';
-import { Inter } from 'next/font/google';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -10,8 +9,6 @@ import { enqueueSnackbar } from 'notistack'
 import TextField from '@mui/material/TextField';
 
 const Time = dynamic(() => import("../component/time").then((module) => module.Time), { ssr: false });
-
-const inter = Inter({ subsets: ['latin'] });
 
 type User = {
   id: string,
@@ -48,7 +45,7 @@ export default function Home() {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<User[] | null>([]);
   const [selectedUser, setSelectedUser] = useState<User>();
   const [kind, setKind] = useState<'start' | 'end'>();
   const [password, setPassword] = useState<string>();
@@ -67,7 +64,6 @@ export default function Home() {
   const onClickOk = () => {
     const originalDate = new Date();
     const isoDateString = originalDate.toLocaleString();
-    console.log({ originalDate, isoDateString })
     fetch(process.env.NEXT_PUBLIC_ATTENDANCE_URL + '/attendance' ?? '', {
       method: "POST",
       mode: "cors",
@@ -116,7 +112,7 @@ export default function Home() {
           <Button variant="contained" sx={{ backgroundColor: "gray", width: "200px" }} >ヘルプ</Button>
         </div>
         <div style={{ marginTop: "60px", gap: 30, display: "flex" }}>
-          {users.map((user) => (
+          {(users ?? []).map((user) => (
             <Button key={user.id} variant="contained" sx={{ backgroundColor: "green" }} onClick={() => onClickUserName(user)} disabled={!kind}>{user.name}</Button>
           ))}
         </div>
