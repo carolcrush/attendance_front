@@ -4,8 +4,6 @@ import { Attendance } from '../types/attendance';
 import { parseISO } from 'date-fns';
 
 const columns: GridColDef[] = [
-    // { field: 'id', headerName: 'ID', width: 70, },
-    // { field: 'userId', headerName: 'UserID', width: 70 },
     { field: 'name', headerName: 'Name', width: 130 },
     { field: 'start', headerName: '出勤時間', width: 200, },
     { field: 'end', headerName: '退勤時間', width: 200 },
