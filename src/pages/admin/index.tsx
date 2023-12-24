@@ -48,16 +48,19 @@ export default function AdminHome() {
                 name: name,
                 password: password,
             }),
-        }).then((res) => {
+        }).then(async (res) => {
             console.log({ res })
             if (res.status != 200) {
-                throw new Error(res.statusText)
+                const msg = await res.json()
+                throw new Error(msg)
             }
             enqueueSnackbar('success', { variant: 'success', anchorOrigin: { horizontal: 'center', vertical: 'top' } })
         }).catch((e: Error) => {
             console.log({ e })
             enqueueSnackbar(e.message, { variant: 'error', anchorOrigin: { horizontal: 'center', vertical: 'top' } })
         })
+        setId('')
+        setName('')
         setPassword('')
         handleClose()
     }
@@ -65,14 +68,14 @@ export default function AdminHome() {
     return (
         <>
             <div style={{ marginTop: "30px", gap: 50, display: "flex" }}>
-                <Button variant="contained" onClick={handleOpen}>ユーザ追加</Button>
-            </div>
+                <Button variant="contained" onClick={handleOpen} style={{ marginLeft: "30px", width: "200px", height: "50px" }}>ユーザ追加</Button>
+            </div >
             <Modal
                 open={open}
                 onClose={handleClose}
             >
                 <Box sx={style}>
-                    <Typography id="modal-modal-title" variant="h6" component="h2">
+                    <Typography id="modal-modal-title" variant="h6" component="h2" marginLeft={"80px"}>
                         id（必須）
                     </Typography>
                     <TextField
@@ -81,9 +84,11 @@ export default function AdminHome() {
                             setId(event.target.value);
                         }}
                         value={id}
-                        style={{ marginBottom: "20px" }}
+                        style={{
+                            marginLeft: "80px", marginBottom: "20px"
+                        }}
                     />
-                    <Typography id="modal-modal-title" variant="h6" component="h2">
+                    < Typography id="modal-modal-title" variant="h6" component="h2" marginLeft={"80px"} >
                         name（必須）
                     </Typography>
                     <TextField
@@ -92,10 +97,11 @@ export default function AdminHome() {
                             setName(event.target.value);
                         }}
                         value={name}
-                        style={{ marginBottom: "20px" }}
+                        style={{ marginLeft: "80px", marginBottom: "20px" }}
                     />
-                    <Typography id="modal-modal-title" variant="h6" component="h2">
+                    <Typography id="modal-modal-title" variant="h6" component="h2" marginLeft={"80px"}>
                         password（必須）
+                        <div style={{ fontSize: "14px" }}>*アルファベットまたは数字8文字以上255文字以内</div>
                     </Typography>
                     <TextField
                         type="password"
@@ -103,7 +109,7 @@ export default function AdminHome() {
                             setPassword(event.target.value);
                         }}
                         value={password}
-                        style={{ marginBottom: "30px" }}
+                        style={{ marginLeft: "80px", marginBottom: "30px" }}
                     />
                     <div style={{ gap: 50, display: "flex" }}>
                         <Button sx={{ width: "150px" }} variant="contained" onClick={handleClose}>キャンセル</Button>

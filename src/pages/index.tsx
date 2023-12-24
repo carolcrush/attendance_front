@@ -7,8 +7,29 @@ import Modal from '@mui/material/Modal';
 import dynamic from "next/dynamic";
 import { enqueueSnackbar } from 'notistack'
 import TextField from '@mui/material/TextField';
+import { Attendance } from '../types/attendance';
 
 const Time = dynamic(() => import("../component/time").then((module) => module.Time), { ssr: false });
+
+
+const dateFormat = (date: string) => {
+  const a = date.split(' ')
+  const b = a[0].split('-')
+  return `${b[1]}/${b[2]} ${a[1]}`
+}
+const display = (attendance: Attendance) => {
+  if (attendance.start) {
+
+    return (
+      <div>{dateFormat(attendance.start)} <span style={{ color: 'green' }}>出勤</span> {attendance.name}</div>
+    )
+  }
+  if (attendance.end) {
+    return (
+      <div>{dateFormat(attendance.end)} <span style={{ color: 'red' }}>退勤</span> {attendance.name}</div>
+    )
+  }
+}
 
 type User = {
   id: string,
@@ -49,6 +70,7 @@ export default function Home() {
   const [selectedUser, setSelectedUser] = useState<User>();
   const [kind, setKind] = useState<'start' | 'end'>();
   const [password, setPassword] = useState<string>();
+  const [attendance, setAttendance] = useState<Attendance[] | null>([]);
 
   useEffect(() => {
     fetch(process.env.NEXT_PUBLIC_ATTENDANCE_URL + '/user' ?? '')
@@ -60,6 +82,31 @@ export default function Home() {
     setSelectedUser(user)
     handleOpen();
   }
+
+  useEffect(() => {
+    fetch(process.env.NEXT_PUBLIC_ATTENDANCE_URL + '/admin' ?? '')
+      .then((response) => response.json())
+      .then((data) => {
+        if (data) {
+          const a = (data as Attendance[]).reduce((arr, cur) => {
+            let b = []
+            b = [...arr, {
+              ...cur,
+              end: ''
+            }]
+            if (cur.end) {
+              b = [...b, {
+                ...cur,
+                start: ''
+              }]
+            }
+            return b
+          }, [] as Attendance[])
+          console.log({ a })
+          setAttendance(a)
+        }
+      });
+  }, []);
 
   const onClickOk = () => {
     const originalDate = new Date();
@@ -76,10 +123,11 @@ export default function Home() {
         time: isoDateString,
         password: password,
       }),
-    }).then((res) => {
+    }).then(async (res) => {
       console.log({ res })
       if (res.status != 200) {
-        throw new Error(res.statusText)
+        const msg = await res.json()
+        throw new Error(msg)
       }
       enqueueSnackbar('success', { variant: 'success', anchorOrigin: { horizontal: 'center', vertical: 'top' } })
     }).catch((e: Error) => {
@@ -107,8 +155,8 @@ export default function Home() {
           <Button sx={kind === 'end' ? selectKindStyle : defaultStyle} variant="contained" onClick={() => setKind("end")}>退勤</Button>
         </div>
         <div style={{ marginTop: "30px", gap: 50, display: "flex" }}>
-          <Button variant="contained" sx={{ backgroundColor: "gray", width: "400px" }} >タイムカード</Button>
-          <Button variant="contained" sx={{ backgroundColor: "gray", width: "300px" }} >出勤状況</Button>
+          <Button variant="contained" sx={{ backgroundColor: "gray", width: "300px" }} >タイムカード</Button>
+          <Button variant="contained" sx={{ backgroundColor: "gray", width: "300px" }} >システムのお問い合わせ</Button>
           <Button variant="contained" sx={{ backgroundColor: "gray", width: "200px" }} >ヘルプ</Button>
         </div>
         <div style={{ marginTop: "60px", gap: 30, display: "flex" }}>
@@ -122,7 +170,7 @@ export default function Home() {
         onClose={handleClose}
       >
         <Box sx={style}>
-          <Typography id="modal-modal-title" variant="h6" component="h2">
+          <Typography id="modal-modal-title" variant="h6" component="h2" marginLeft={"100px"}>
             {selectedUser?.id}: {selectedUser?.name}
           </Typography>
           <TextField
@@ -132,13 +180,22 @@ export default function Home() {
               setPassword(event.target.value);
             }}
             value={password}
+            style={{ marginLeft: "100px", marginBottom: "20px" }}
           />
-          <div>
-            <Button variant="contained" onClick={handleClose}>キャンセル</Button>
-            <Button variant="contained" onClick={onClickOk}>OK</Button>
+          <div style={{ gap: 50, display: "flex" }}>
+            <Button sx={{ width: "150px" }} variant="contained" onClick={handleClose}>キャンセル</Button>
+            <Button sx={{ width: "150px" }} variant="contained" onClick={onClickOk}>OK</Button>
           </div>
         </Box>
       </Modal>
+      <div style={{
+        backgroundColor: '#e0e0e0', marginTop: '30px', borderRadius: 30, padding: '20px',
+        width: 'fit-content', overflowY: 'auto', height: '250px', marginLeft: 'auto', marginRight: '100px'
+      }}>
+        {(attendance ? [...attendance].reverse() : []).map((a, i) => (
+          <div key={a.id + i}>{display(a)}</div>
+        ))}
+      </div>
     </>
   );
 }
