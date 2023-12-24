@@ -72,18 +72,7 @@ export default function Home() {
   const [password, setPassword] = useState<string>();
   const [attendance, setAttendance] = useState<Attendance[] | null>([]);
 
-  useEffect(() => {
-    fetch(process.env.NEXT_PUBLIC_ATTENDANCE_URL + '/user' ?? '')
-      .then((response) => response.json())
-      .then((data) => setUsers(data));
-  }, []);
-
-  const onClickUserName = (user: User) => {
-    setSelectedUser(user)
-    handleOpen();
-  }
-
-  useEffect(() => {
+  const getAttendance = () => {
     fetch(process.env.NEXT_PUBLIC_ATTENDANCE_URL + '/admin' ?? '')
       .then((response) => response.json())
       .then((data) => {
@@ -106,6 +95,21 @@ export default function Home() {
           setAttendance(a)
         }
       });
+  }
+
+  useEffect(() => {
+    fetch(process.env.NEXT_PUBLIC_ATTENDANCE_URL + '/user' ?? '')
+      .then((response) => response.json())
+      .then((data) => setUsers(data));
+  }, []);
+
+  const onClickUserName = (user: User) => {
+    setSelectedUser(user)
+    handleOpen();
+  }
+
+  useEffect(() => {
+    getAttendance();
   }, []);
 
   const onClickOk = () => {
@@ -129,6 +133,7 @@ export default function Home() {
         const msg = await res.json()
         throw new Error(msg)
       }
+      getAttendance();
       enqueueSnackbar('success', { variant: 'success', anchorOrigin: { horizontal: 'center', vertical: 'top' } })
     }).catch((e: Error) => {
       console.log({ e })
