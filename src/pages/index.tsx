@@ -155,9 +155,10 @@ export default function Home() {
           <Button sx={kind === 'end' ? selectKindStyle : defaultStyle} variant="contained" onClick={() => setKind("end")}>退勤</Button>
         </div>
         <div style={{ marginTop: "30px", gap: 50, display: "flex" }}>
-          <Button variant="contained" sx={{ backgroundColor: "gray", width: "300px" }} >タイムカード</Button>
-          <Button variant="contained" sx={{ backgroundColor: "gray", width: "300px" }} >システムのお問い合わせ</Button>
+          <Button variant="contained" sx={{ backgroundColor: "gray", width: "200px" }} >タイムカード</Button>
+          <Button variant="contained" sx={{ backgroundColor: "gray", width: "200px" }} >システムのお問い合わせ</Button>
           <Button variant="contained" sx={{ backgroundColor: "gray", width: "200px" }} >ヘルプ</Button>
+          <Button variant="contained" sx={{ backgroundColor: "gray", width: "200px" }} >パスワード変更</Button>
         </div>
         <div style={{ marginTop: "60px", gap: 30, display: "flex" }}>
           {(users ?? []).map((user) => (
