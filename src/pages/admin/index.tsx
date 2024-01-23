@@ -77,6 +77,7 @@ export default function AdminHome() {
                 <Box sx={style}>
                     <Typography id="modal-modal-title" variant="h6" component="h2" marginLeft={"80px"}>
                         id（必須）
+                        <div style={{ fontSize: "14px" }}>*アルファベットまたは数字1文字以上8文字以内</div>
                     </Typography>
                     <TextField
                         type="id"
@@ -90,6 +91,7 @@ export default function AdminHome() {
                     />
                     < Typography id="modal-modal-title" variant="h6" component="h2" marginLeft={"80px"} >
                         name（必須）
+                        <div style={{ fontSize: "14px" }}>*アルファベットまたは漢字2文字以上</div>
                     </Typography>
                     <TextField
                         type="name"
@@ -101,7 +103,7 @@ export default function AdminHome() {
                     />
                     <Typography id="modal-modal-title" variant="h6" component="h2" marginLeft={"80px"}>
                         password（必須）
-                        <div style={{ fontSize: "14px" }}>*アルファベットまたは数字8文字以上255文字以内</div>
+                        <div style={{ fontSize: "14px" }}>*アルファベットまたは数字8文字以上20文字以内</div>
                     </Typography>
                     <TextField
                         type="password"
@@ -117,6 +119,9 @@ export default function AdminHome() {
                     </div>
                 </Box>
             </Modal >
+            <div style={{ marginTop: "30px", gap: 50, display: "flex" }}>
+                <Button variant="contained" style={{ marginLeft: "30px", width: "200px", height: "50px" }}>ユーザ削除</Button>
+            </div >
             <DataTable attendance={attendance ?? []} />
         </>
     );

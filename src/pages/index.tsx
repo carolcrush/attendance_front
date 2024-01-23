@@ -91,7 +91,6 @@ export default function Home() {
             }
             return b
           }, [] as Attendance[])
-          console.log({ a })
           setAttendance(a)
         }
       });
