@@ -77,7 +77,7 @@ export default function Home() {
       .then((response) => response.json())
       .then((data) => {
         if (data) {
-          const a = (data as Attendance[]).reduce((arr, cur) => {
+          const attendance = (data as Attendance[]).reduce((arr, cur) => {
             let b = []
             b = [...arr, {
               ...cur,
@@ -91,7 +91,8 @@ export default function Home() {
             }
             return b
           }, [] as Attendance[])
-          setAttendance(a)
+          const attendanceSort = attendance.sort((a, b) => (new Date(b.start || b.end)).getTime() - (new Date(a.start || a.end)).getTime())
+          setAttendance(attendanceSort)
         }
       });
   }
@@ -197,7 +198,7 @@ export default function Home() {
         backgroundColor: '#e0e0e0', marginTop: '30px', borderRadius: 30, padding: '20px',
         width: 'fit-content', overflowY: 'auto', height: '250px', marginLeft: 'auto', marginRight: '100px'
       }}>
-        {(attendance ? [...attendance].reverse() : []).map((a, i) => (
+        {(attendance ?? []).map((a, i) => (
           <div key={a.id + i}>{display(a)}</div>
         ))}
       </div>
